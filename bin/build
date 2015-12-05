@@ -1,0 +1,29 @@
+#!/usr/bin/env node
+var path = require('path')
+var fs = require('fs')
+
+var file = path.join(__dirname, '../tmp/acoustic_grand_piano-ogg.js')
+var content = fs.readFileSync(file).toString()
+var i = content.lastIndexOf('{')
+var l = content.lastIndexOf(',')
+fs.writeFileSync(path.join(__dirname, '../instruments/piano.json'), content.slice(i, l) + '}')
+
+var NOTES = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B']
+var piano = require('../instruments/piano.json')
+
+var piano24 = build(piano, octaves(2, 4))
+fs.writeFileSync(path.join(__dirname, '../instruments/piano-24.json'), JSON.stringify(piano24, null, 2))
+
+function build (source, notes) {
+  var dest = {}
+  notes.forEach((n) => dest[n] = source[n])
+  return dest
+}
+
+function octaves (min, max) {
+  var notes = []
+  for (var o = min; o <= max; o++) {
+    NOTES.map((n) => notes.push(n + o))
+  }
+  return notes
+}
