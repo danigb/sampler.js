@@ -1,0 +1,9 @@
+CHANGELOG
+
+[MASTER]
+- First version
+- sampler can stop all samples
+
+TODO:
+- Bank
+- Events (all notes off)

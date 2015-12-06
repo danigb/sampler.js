@@ -4,7 +4,8 @@
   "description": "A simple web audio sampler",
   "main": "index.js",
   "scripts": {
-    "test": "mocha"
+    "test": "mocha",
+    "dist": "browserify index.js | uglifyjs > dist/sampler.min.js&& ls -hall dist/"
   },
   "repository": {
     "type": "git",

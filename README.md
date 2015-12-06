@@ -3,11 +3,14 @@
 A simple audio sampler:
 
 ```js
-var sampler = require('sampler.js')
-loader.load('piano').then(function (buffers) {
-var piano = midi(sampler(ac, buffers, { poly: 8, adsr: [0.2, 0.2, 0.7, 1]}))
-  piano.play('c2')
+var ac = new AudioContext()
+var sampler = require('sampler-inst')(ac)
+var loader = require('soundfont-loader')(ac)
+loader.load('piano', loader.).then(function (audioBuffers) {
+  piano = sampler.instrument(audioBuffers, { poly: 8, adsr: [0.2, 0.2, 0.7, 1] })
 })
+
+
 
 var saw = sampler(ac, buffers, {
   poly: 1,

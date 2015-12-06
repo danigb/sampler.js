@@ -1,25 +1,42 @@
 var load = require('soundfont-loader')
 
+function noop () {}
+
 function Sampler (ac, buffers, preset) {
   preset = preset || {}
   var output = ac.createGain()
   output.gain.value = preset.gain || 1
 
-  var sampler = {}
+  var sampler = { emit: noop }
   sampler.connect = function (destination) {
     output.connect(destination)
     return sampler
   }
-  sampler.sample = function (note, options) {
+  sampler.sample = function (name, options) {
     options = options || {}
-    var buffer = buffers[note]
+    var buffer = buffers[name]
     if (!buffer) return
-    var source = ac.createBufferSource()
-    source.buffer = buffer
-    source.loop = options.loop || false
-    source.connect(output)
-    track(source)
-    return source
+    return {
+      start: function (when, offset, duration) {
+        when = when || ac.currentTime
+        offset = offset || 0
+        duration = duration || buffer.length - offset
+        var source = ac.createBufferSource()
+        source.sampleName = name
+        source.buffer = buffer
+        source.loop = options.loop || false
+        source.connect(output)
+        track(source)
+        source.start(when, offset, duration)
+
+        return {
+          stop: function (when) { source.stop() },
+          start: function (when, offset, duration) {
+            return sampler.sample(name, options).start(when, offset, duration)
+          }
+        }
+      }
+    }
   }
   sampler.stop = function (when) {
     when = when || 0
@@ -33,11 +50,11 @@ function Sampler (ac, buffers, preset) {
   var tracked = {}
   function track (source) {
     source.id = nextId++
+    source.onended = bufferEnded
     tracked[source.id] = source
-    source.addEventListener('ended', onBufferEnded)
   }
 
-  function onBufferEnded (e) {
+  function bufferEnded (e) {
     var source = e.target
     source.stop()
     source.disconnect()
